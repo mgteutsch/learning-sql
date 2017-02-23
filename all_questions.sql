@@ -58,12 +58,97 @@ SELECT Employee.FirstName || " " || Employee.LastName AS "Sales Agent Full Name"
 
 SELECT Employee.FirstName || " " || Employee.LastName AS "Sales Agent Full Name", InvoiceId, Customer.FirstName || " " || Customer.LastName AS "Invoiced Customer Full Name", Customer.Company AS "Customer Company (if applicable)", Invoice.BillingAddress || ", " || Invoice.BillingCity || ", "|| Invoice.BillingState || ", " || Invoice.BillingCountry || ", " || Invoice.BillingPostalCode AS "Invoice Address", Invoice.Total  
      FROM Employee 
-          JOIN Customer ON Employee.EmployeeId == Customer.SupportRepId 
+          JOIN Customer ON Employee.EmployeeId == Customer.SupportRepId
+               JOIN Invoice ON Customer.CustomerId == Invoice.CustomerId 
 
 -- Most of this was 'accidentally' accomplished in #6. Added Invoice Total. 
 
 
 
 
--- 8. 
+-- 8. How many Invoices were there in 2009 and 2011?
+
+SELECT * FROM Invoice WHERE 
+    (InvoiceDate BETWEEN "2009-01-01 00:00:00" AND "2009-12-31 00:00:00") 
+    OR 
+    (InvoiceDate BETWEEN "2011-01-01 00:00:00" AND "2011-12-31 00:00:00")
+
+-- The number of rows returned is 166
+-- Another way to do it is:
+
+SELECT COUNT(InvoiceDate) FROM Invoice WHERE 
+    (InvoiceDate BETWEEN "2009-01-01 00:00:00" AND "2009-12-31 00:00:00") 
+    OR 
+    (InvoiceDate BETWEEN "2011-01-01 00:00:00" AND "2011-12-31 00:00:00")
+
+-- which returns 166 in the actual table
+-- Simpler:
+
+SELECT COUNT(InvoiceDate) FROM Invoice WHERE 
+    InvoiceDate LIKE "2009%" 
+    OR 
+    InvoiceDate LIKE "2011%" 
+
+
+
+
+-- 9. What are the respective total sales for each of those years (2009 & 2011)?
+
+SELECT SUM(CASE WHEN InvoiceDate LIKE "2009%" THEN Total END) AS "2009 Total", 
+     SUM(CASE WHEN InvoiceDate LIKE "2011%" THEN Total END) AS "2011 Total", 
+           SUM(CASE WHEN InvoiceDate LIKE "2009%" OR InvoiceDate LIKE "2011%" THEN Total END) AS "2009 & 2011 Combined" FROM Invoice 
+
+-- This will return 3 columns:
+--- (1) 2009 Total (2) 2011 Total (3) 2009+2011 
+
+
+
+
+-- 10. Looking at the InvoiceLine table, provide a query that COUNTs the number of line items for Invoice ID 37.
+
+SELECT COUNT(InvoiceId) FROM InvoiceLine WHERE InvoiceId == 37
+
+
+
+
+-- 11. Looking at the InvoiceLine table, provide a query that COUNTs the number of line items for each Invoice. HINT: GROUP BY
+
+SELECT InvoiceId, COUNT(InvoiceId) FROM InvoiceLine GROUP BY InvoiceId
+
+
+
+
+-- 12. Provide a query that includes the purchased track name with each invoice line item.
+
+SELECT Track.Name, InvoiceLine.* FROM InvoiceLine JOIN Track ON Track.TrackId == InvoiceLine.TrackId 
+
+
+
+
+-- 13. Provide a query that includes the purchased track name AND artist name with each invoice line item.
+
+SELECT Track.Name AS "Track Name", Artist.Name AS "Artist Name", InvoiceLine.* FROM InvoiceLine 
+     JOIN Track ON Track.TrackId == InvoiceLine.TrackId
+          JOIN Album ON Album.AlbumId == Track.AlbumId
+               JOIN Artist ON Artist.ArtistId == Album.ArtistId
+                    GROUP BY InvoiceLineId
+
+-- GROUP BY isn't necessary, but will consolidate the duplicates
+
+
+
+
+-- 14. 
+
+
+
+
+
+
+
+
+
+
+
+
 
